@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Users - Admin{% endblock %}
+
+{% block body %}
+<nav class="bg-white border-b border-gray-200 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+    <span class="font-bold">BitChest Admin</span>
+    <div class="flex gap-4">
+        <a href="{{ path('admin_prices') }}" class="text-gray-600 hover:text-blue-600">Crypto Prices</a>
+        <a href="{{ path('profile_edit') }}" class="text-gray-600 hover:text-blue-600">My Profile</a>
+        <a href="{{ path('app_logout') }}" class="text-red-600 hover:underline">Logout</a>
+    </div>
+</nav>
+
+<div class="max-w-4xl mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl font-bold">Users</h1>
+        <a href="{{ path('admin_user_new') }}"
+            class="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700">
+            + New User
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <p class="bg-green-50 border border-green-300 text-green-700 px-3 py-2 rounded mb-3">
+            {{ message|raw }}
+        </p>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <p class="bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded mb-3">
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    <div class="overflow-x-auto">
+        <table class="w-full border border-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="text-left px-3 py-2 border-b">ID</th>
+                    <th class="text-left px-3 py-2 border-b">Name</th>
+                    <th class="text-left px-3 py-2 border-b">Email</th>
+                    <th class="text-left px-3 py-2 border-b">Role</th>
+                    <th class="text-left px-3 py-2 border-b">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-3 py-2">{{ user.id }}</td>
+                    <td class="px-3 py-2">{{ user.firstName }} {{ user.lastName }}</td>
+                    <td class="px-3 py-2">{{ user.email }}</td>
+                    <td class="px-3 py-2">
+                        {% if 'ROLE_ADMIN' in user.roles %}Admin{% else %}Client{% endif %}
+                    </td>
+                    <td class="px-3 py-2">
+                        <div class="flex gap-3">
+                            <a href="{{ path('admin_user_edit', {id: user.id}) }}"
+                                class="text-blue-600 hover:underline">Edit</a>
+                            <form method="post"
+                                action="{{ path('admin_user_delete', {id: user.id}) }}"
+                                onsubmit="return confirm('Delete this user?');">
+                                <input type="hidden" name="_token"
+                                    value="{{ csrf_token('delete' ~ user.id) }}">
+                                <button class="text-red-600 hover:underline">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-3 py-4 text-center text-gray-500">No users.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

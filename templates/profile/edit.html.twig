@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile - BitChest{% endblock %}
+
+{% block body %}
+<nav class="bg-white border-b border-gray-200 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+    <span class="font-bold">BitChest</span>
+    <div class="flex gap-4">
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('admin_index') }}" class="text-gray-600 hover:text-blue-600">Admin Panel</a>
+        {% else %}
+            <a href="{{ path('client_dashboard') }}" class="text-gray-600 hover:text-blue-600">Dashboard</a>
+        {% endif %}
+        <a href="{{ path('app_logout') }}" class="text-red-600 hover:underline">Logout</a>
+    </div>
+</nav>
+
+<div class="max-w-md mx-auto px-4 py-6">
+    <h1 class="text-xl font-bold mb-4">My Profile</h1>
+
+    {% for message in app.flashes('success') %}
+        <p class="bg-green-50 border border-green-300 text-green-700 px-3 py-2 rounded mb-3">
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <p class="bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded mb-3">
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    <form method="post" class="bg-white border border-gray-200 rounded p-6 space-y-4 mb-4">
+        <div>
+            <label class="block font-medium mb-1">First Name</label>
+            <input type="text" name="firstName" value="{{ user.firstName }}" required
+                class="w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+        <div>
+            <label class="block font-medium mb-1">Last Name</label>
+            <input type="text" name="lastName" value="{{ user.lastName }}" required
+                class="w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+        <div>
+            <label class="block font-medium mb-1">Email</label>
+            <input type="email" name="email" value="{{ user.email }}" required
+                class="w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+        <button type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Save Changes
+        </button>
+    </form>
+
+    <a href="{{ path('profile_password') }}" class="text-blue-600 hover:underline">
+        Change password →
+    </a>
+</div>
+{% endblock %}
