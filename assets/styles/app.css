@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+/* ── Fade-in animation for page content ── */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Slide-down for modals / expandable rows ── */
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Loading spinner ── */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-fade-in  { animation: fadeIn   0.35s ease forwards; }
+.animate-slide-down { animation: slideDown 0.2s  ease forwards; }
+
+.spinner {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #cbd5e1;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+}
+
+/* ── Smooth focus rings on inputs ── */
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
