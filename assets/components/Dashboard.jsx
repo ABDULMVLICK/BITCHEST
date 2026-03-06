@@ -4,9 +4,7 @@ import Portfolio from './Portfolio';
 
 /**
  * Main client dashboard.
- *
- * Reads user metadata from the #root element's data-* attributes
- * so the Twig template can pass server-side values without an extra API call.
+ * Reads user metadata from the #root element's data-* attributes.
  */
 const Dashboard = () => {
     const root = document.getElementById('root');
@@ -14,10 +12,9 @@ const Dashboard = () => {
     const logoutUrl  = root?.dataset.logoutUrl  || '/logout';
     const profileUrl = root?.dataset.profileUrl || '/profile/edit';
 
-    const [tab, setTab] = useState('market');
+    const [tab, setTab]           = useState('market');
     const [eurBalance, setEurBalance] = useState(null);
 
-    // Load EUR balance once on mount
     useEffect(() => {
         fetch('/api/portfolio')
             .then(r => r.json())
@@ -26,62 +23,66 @@ const Dashboard = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 animate-fade-in">
-            {/* Navigation bar — dark navy with logo */}
-            <nav className="bg-blue-900 text-white px-4 py-3 flex flex-wrap justify-between items-center gap-2 shadow-md">
-                <div className="flex items-center gap-3">
-                    <img src="/images/bitchest_logo.png" alt="BitChest" className="h-8 w-8 rounded" />
-                    <span className="font-bold text-lg tracking-wide">BitChest</span>
-                </div>
-                <div className="flex items-center gap-5">
-                    {eurBalance !== null && (
-                        <span className="font-mono text-blue-100 text-sm">
-                            <span className="text-blue-300 mr-1">Balance</span>
-                            €{Number(eurBalance).toFixed(2)}
-                        </span>
-                    )}
-                    <a href={profileUrl} className="text-blue-200 hover:text-white transition text-sm">
-                        {username}
-                    </a>
-                    <a href={logoutUrl} className="bg-red-600 hover:bg-red-700 transition text-white text-sm px-3 py-1 rounded">
-                        Logout
-                    </a>
-                </div>
-            </nav>
+        <div className="min-h-screen" style={{ background: '#f1f5f9' }}>
 
-            <div className="max-w-5xl mx-auto px-4 py-6">
-                {/* Tab navigation */}
-                <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit shadow-sm">
+            {/* ── Navbar ── */}
+            <nav style={{ background: '#38618C' }} className="text-white px-5 py-0 flex justify-between items-stretch shadow-lg">
+                <div className="flex items-center gap-3 py-3">
+                    <img src="/images/bitchest_logo.png" alt="BitChest" className="h-8 w-8 rounded-full" />
+                    <span className="font-bold text-base tracking-wide">BitChest</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                    {/* Balance badge */}
+                    {eurBalance !== null && (
+                        <div style={{ background: '#2d5278' }} className="rounded-lg px-3 py-1.5 mr-3">
+                            <span style={{ color: '#35A7FF' }} className="text-xs mr-1">Balance</span>
+                            <span className="font-mono font-semibold text-sm text-white">
+                                €{Number(eurBalance).toFixed(2)}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Tab buttons inside nav */}
                     <button
-                        className={`px-5 py-2 rounded-md font-medium text-sm transition ${
-                            tab === 'market'
-                                ? 'bg-blue-700 text-white shadow'
-                                : 'text-gray-600 hover:text-blue-700 hover:bg-blue-50'
-                        }`}
                         onClick={() => setTab('market')}
+                        style={tab === 'market'
+                            ? { borderBottom: '3px solid #35A7FF', color: '#fff' }
+                            : { borderBottom: '3px solid transparent', color: '#94a3b8' }
+                        }
+                        className="px-4 py-4 text-sm font-medium transition-colors hover:text-white"
                     >
                         Market
                     </button>
                     <button
-                        className={`px-5 py-2 rounded-md font-medium text-sm transition ${
-                            tab === 'portfolio'
-                                ? 'bg-blue-700 text-white shadow'
-                                : 'text-gray-600 hover:text-blue-700 hover:bg-blue-50'
-                        }`}
                         onClick={() => setTab('portfolio')}
+                        style={tab === 'portfolio'
+                            ? { borderBottom: '3px solid #35A7FF', color: '#fff' }
+                            : { borderBottom: '3px solid transparent', color: '#94a3b8' }
+                        }
+                        className="px-4 py-4 text-sm font-medium transition-colors hover:text-white"
                     >
-                        My Portfolio
+                        Portfolio
                     </button>
-                </div>
 
-                <div className="animate-fade-in">
-                    {tab === 'market' && (
-                        <CryptoList onBalanceChange={setEurBalance} />
-                    )}
-                    {tab === 'portfolio' && (
-                        <Portfolio onBalanceChange={setEurBalance} />
-                    )}
+                    <div className="ml-4 border-l border-slate-700 pl-4 flex items-center gap-3">
+                        <a href={profileUrl}
+                            className="text-slate-400 hover:text-white transition text-sm">
+                            {username}
+                        </a>
+                        <a href={logoutUrl}
+                            style={{ background: '#dc2626' }}
+                            className="text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:opacity-90 transition">
+                            Logout
+                        </a>
+                    </div>
                 </div>
+            </nav>
+
+            {/* ── Content ── */}
+            <div className="max-w-5xl mx-auto px-4 py-7 animate-fade-in">
+                {tab === 'market'    && <CryptoList onBalanceChange={setEurBalance} />}
+                {tab === 'portfolio' && <Portfolio  onBalanceChange={setEurBalance} />}
             </div>
         </div>
     );

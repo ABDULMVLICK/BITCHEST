@@ -29,6 +29,9 @@ yarn-error.log
 # macOS
 .DS_Store
 
+# Docker / Railway (ne pas ignorer ces fichiers)
+# Dockerfile et railway.json sont commités volontairement
+
 # Sensitive env files (keep .env as example)
 .env.dev
 .env.test

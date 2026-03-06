@@ -3,61 +3,92 @@
 {% block title %}Login - BitChest{% endblock %}
 
 {% block body %}
-<div class="min-h-screen flex items-center justify-center py-8 px-4 bg-gray-50">
-    <div class="w-full max-w-sm animate-fade-in">
-        <div class="text-center mb-8">
-            <img src="{{ asset('images/bitchest_logo.png') }}" alt="BitChest"
-                class="h-16 w-16 mx-auto mb-3 rounded-full shadow">
-            <h1 class="text-2xl font-bold text-blue-900">BitChest</h1>
-            <p class="text-gray-400 text-sm mt-1">Crypto trading platform</p>
+<div class="min-h-screen flex">
+
+    {# ── Left panel — branding ── #}
+    <div class="hidden md:flex w-2/5 flex-col items-center justify-center bg-blue-900 text-white px-10">
+        <img src="{{ asset('images/bitchest_logo.png') }}" alt="BitChest"
+            class="h-20 w-20 rounded-full shadow-lg mb-6">
+        <h1 class="text-3xl font-bold mb-2 tracking-wide">BitChest</h1>
+        <p class="text-blue-300 text-center text-sm leading-relaxed">
+            Buy and sell crypto in real time.<br>
+            Track your portfolio and performance.
+        </p>
+        <div class="mt-10 grid grid-cols-2 gap-3 w-full max-w-xs text-center text-xs text-blue-300">
+            <div class="bg-blue-800 rounded-lg py-3 px-2">
+                <p class="text-white font-bold text-base">10</p>
+                <p>Cryptocurrencies</p>
+            </div>
+            <div class="bg-blue-800 rounded-lg py-3 px-2">
+                <p class="text-white font-bold text-base">€500</p>
+                <p>Starting balance</p>
+            </div>
         </div>
-
-        {% for message in app.flashes('success') %}
-            <p class="bg-green-50 border border-green-300 text-green-700 px-3 py-2 rounded mb-4 text-sm">
-                {{ message }}
-            </p>
-        {% endfor %}
-
-        {% if error %}
-            <p class="bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded mb-4 text-sm">
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-            </p>
-        {% endif %}
-
-        <form method="post" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 space-y-4">
-            <div>
-                <label class="block font-medium mb-1 text-gray-700 text-sm" for="username">Email</label>
-                <input type="email" id="username" name="_username"
-                    value="{{ last_username }}"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition"
-                    required autofocus>
-            </div>
-
-            <div>
-                <label class="block font-medium mb-1 text-gray-700 text-sm" for="password">Password</label>
-                <input type="password" id="password" name="_password"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm transition"
-                    required>
-            </div>
-
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-            <button type="submit"
-                class="w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded-lg transition font-medium text-sm">
-                Sign in
-            </button>
-        </form>
-
-        <p class="text-center mt-3 text-sm">
-            <a href="{{ path('forgot_password') }}" class="text-gray-400 hover:text-blue-600 transition">
-                Forgot your password?
-            </a>
-        </p>
-
-        <p class="text-center mt-2 text-sm text-gray-500">
-            No account?
-            <a href="{{ path('app_register') }}" class="text-blue-700 font-medium hover:underline">Register</a>
-        </p>
     </div>
+
+    {# ── Right panel — form ── #}
+    <div class="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12">
+        <div class="w-full max-w-sm animate-fade-in">
+
+            {# Mobile logo #}
+            <div class="md:hidden text-center mb-8">
+                <img src="{{ asset('images/bitchest_logo.png') }}" alt="BitChest"
+                    class="h-14 w-14 mx-auto rounded-full shadow mb-3">
+                <h1 class="text-xl font-bold text-blue-900">BitChest</h1>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 mb-1">Welcome back</h2>
+            <p class="text-gray-400 text-sm mb-6">Sign in to your account</p>
+
+            {% for message in app.flashes('success') %}
+                <p class="bg-green-50 border border-green-300 text-green-700 px-3 py-2 rounded-lg mb-4 text-sm">
+                    {{ message }}
+                </p>
+            {% endfor %}
+
+            {% if error %}
+                <p class="bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded-lg mb-4 text-sm">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </p>
+            {% endif %}
+
+            <form method="post" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="username">Email</label>
+                    <input type="email" id="username" name="_username"
+                        value="{{ last_username }}"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white"
+                        required autofocus>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="password">Password</label>
+                    <input type="password" id="password" name="_password"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white"
+                        required>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button type="submit" class="btn-primary w-full py-2.5 text-sm mt-2">
+                    Sign in
+                </button>
+            </form>
+
+            <p class="text-center mt-4 text-sm">
+                <a href="{{ path('forgot_password') }}" class="text-gray-400 hover:text-blue-600 transition">
+                    Forgot your password?
+                </a>
+            </p>
+
+            <div class="border-t border-gray-200 mt-5 pt-5 text-center text-sm text-gray-500">
+                No account yet?
+                <a href="{{ path('app_register') }}" class="text-blue-700 font-medium hover:underline ml-1">
+                    Create one
+                </a>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

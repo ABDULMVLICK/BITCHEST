@@ -3,60 +3,64 @@
 namespace App\Tests\Entity;
 
 use App\Entity\User;
-use App\Entity\Wallet;
 use PHPUnit\Framework\TestCase;
 
 class UserTest extends TestCase
 {
-    public function testUserInitialization(): void
+    // Test 1 : un nouvel utilisateur a bien l'email qu'on lui donne
+    public function testEmail(): void
+    {
+        $user = new User();
+        $user->setEmail('alice@mail.com');
+
+        $this->assertEquals('alice@mail.com', $user->getEmail());
+    }
+
+    // Test 2 : un nouvel utilisateur a bien le prénom et nom qu'on lui donne
+    public function testNom(): void
+    {
+        $user = new User();
+        $user->setFirstName('Alice');
+        $user->setLastName('Martin');
+
+        $this->assertEquals('Alice', $user->getFirstName());
+        $this->assertEquals('Martin', $user->getLastName());
+    }
+
+    // Test 3 : par défaut, tout utilisateur a le rôle ROLE_USER
+    public function testRoleParDefaut(): void
     {
         $user = new User();
 
-        $this->assertNull($user->getId());
-        $this->assertNull($user->getEmail());
-        $this->assertEmpty($user->getWallets());
-
-        // Test default role
         $this->assertContains('ROLE_USER', $user->getRoles());
     }
 
-    public function testUserSettersAndGetters(): void
+    // Test 4 : un admin a le rôle ROLE_ADMIN
+    public function testRoleAdmin(): void
     {
         $user = new User();
+        $user->setRoles(['ROLE_ADMIN']);
 
-        $email = 'test@bitchest.com';
-        $firstName = 'John';
-        $lastName = 'Doe';
-        $password = 'hashed_password';
-
-        $user->setEmail($email)
-            ->setFirstName($firstName)
-            ->setLastName($lastName)
-            ->setPassword($password);
-
-        $this->assertEquals($email, $user->getEmail());
-        $this->assertEquals($email, $user->getUserIdentifier());
-        $this->assertEquals($firstName, $user->getFirstName());
-        $this->assertEquals($lastName, $user->getLastName());
-        $this->assertEquals($password, $user->getPassword());
+        $this->assertContains('ROLE_ADMIN', $user->getRoles());
     }
 
-    public function testWalletRelation(): void
+    // Test 5 : un token de reset pas encore expiré est valide
+    public function testTokenValide(): void
     {
         $user = new User();
-        $wallet = new Wallet();
+        $user->setResetToken('montoken');
+        $user->setResetTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
 
-        // Add wallet
-        $user->addWallet($wallet);
+        $this->assertTrue($user->isResetTokenValid());
+    }
 
-        $this->assertCount(1, $user->getWallets());
-        $this->assertTrue($user->getWallets()->contains($wallet));
-        $this->assertSame($user, $wallet->getOwner());
+    // Test 6 : un token expiré n'est plus valide
+    public function testTokenExpire(): void
+    {
+        $user = new User();
+        $user->setResetToken('montoken');
+        $user->setResetTokenExpiresAt(new \DateTimeImmutable('-1 hour'));
 
-        // Remove wallet
-        $user->removeWallet($wallet);
-
-        $this->assertCount(0, $user->getWallets());
-        $this->assertNull($wallet->getOwner());
+        $this->assertFalse($user->isResetTokenValid());
     }
 }

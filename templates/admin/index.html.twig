@@ -3,7 +3,7 @@
 {% block title %}Users - Admin{% endblock %}
 
 {% block body %}
-<nav class="bg-blue-900 text-white px-4 py-3 flex flex-wrap justify-between items-center gap-2 shadow-md">
+<nav style="background:#38618C" class="text-white px-4 py-3 flex flex-wrap justify-between items-center gap-2 shadow-md">
     <div class="flex items-center gap-3">
         <img src="{{ asset('images/bitchest_logo.png') }}" alt="BitChest" class="h-8 w-8 rounded">
         <span class="font-bold text-lg">BitChest <span class="text-blue-300 text-sm font-normal">Admin</span></span>
@@ -19,7 +19,7 @@
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-xl font-bold">Users</h1>
         <a href="{{ path('admin_user_new') }}"
-            class="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700">
+            style="background:#38618C" class="text-white px-3 py-1.5 rounded hover:opacity-90 transition">
             + New User
         </a>
     </div>
@@ -39,7 +39,7 @@
     <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
         <table class="w-full bg-white">
             <thead>
-                <tr class="bg-blue-900 text-white text-sm">
+                <tr style="background:#38618C" class="text-white text-sm">
                     <th class="text-left px-4 py-3">ID</th>
                     <th class="text-left px-4 py-3">Name</th>
                     <th class="text-left px-4 py-3">Email</th>
@@ -55,7 +55,7 @@
                     <td class="px-4 py-2.5">{{ user.email }}</td>
                     <td class="px-4 py-2.5">
                         {% if 'ROLE_ADMIN' in user.roles %}
-                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-medium">Admin</span>
+                            <span style="background:#e0f0ff;color:#38618C" class=" text-xs px-2 py-0.5 rounded font-medium">Admin</span>
                         {% else %}
                             <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded font-medium">Client</span>
                         {% endif %}
@@ -63,7 +63,7 @@
                     <td class="px-4 py-2.5">
                         <div class="flex gap-3">
                             <a href="{{ path('admin_user_edit', {id: user.id}) }}"
-                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1 rounded transition">Edit</a>
+                                style="background:#38618C" class="text-white text-xs px-2.5 py-1 rounded hover:opacity-90 transition">Edit</a>
                             <form method="post"
                                 action="{{ path('admin_user_delete', {id: user.id}) }}"
                                 onsubmit="return confirm('Delete this user?');">

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 
-/** Maps coin names to their logo filenames in /images/ */
 const COIN_IMAGES = {
     'Bitcoin':      '/images/bitcoin.png',
     'Ethereum':     '/images/ethereum.png',
@@ -15,17 +14,7 @@ const COIN_IMAGES = {
 };
 
 /**
- * Displays the user's cryptocurrency portfolio.
- *
- * For each held cryptocurrency, shows:
- * - Current quantity
- * - Purchase history (date, quantity, price per unit)
- * - PMP (weighted average purchase price per unit)
- * - Current price and total value
- * - Unrealised gain/loss
- * - Sell form
- *
- * @param {Function} onBalanceChange - Called with new EUR balance after a sale
+ * Displays the user's cryptocurrency portfolio with PMP, gains, sell form.
  */
 const Portfolio = ({ onBalanceChange }) => {
     const [portfolio, setPortfolio] = useState(null);
@@ -33,15 +22,11 @@ const Portfolio = ({ onBalanceChange }) => {
     const [msg,       setMsg]       = useState(null);
 
     const loadPortfolio = () => {
-        fetch('/api/portfolio')
-            .then(r => r.json())
-            .then(setPortfolio)
-            .catch(() => {});
+        fetch('/api/portfolio').then(r => r.json()).then(setPortfolio).catch(() => {});
     };
 
     useEffect(loadPortfolio, []);
 
-    /** Submits a sell order for the selected coin. */
     const handleSell = async (e) => {
         e.preventDefault();
         const res  = await fetch('/api/sell', {
@@ -50,7 +35,6 @@ const Portfolio = ({ onBalanceChange }) => {
             body: JSON.stringify({ coin: sellForm.coin, quantity: parseFloat(sellForm.quantity) }),
         });
         const data = await res.json();
-
         if (res.ok) {
             setMsg({ ok: true, text: `Sold ${sellForm.coin}. Gain: €${Number(data.gain).toFixed(2)}` });
             onBalanceChange?.(data.eur_balance);
@@ -63,144 +47,162 @@ const Portfolio = ({ onBalanceChange }) => {
 
     if (!portfolio) {
         return (
-            <div className="flex items-center gap-3 text-gray-500 py-10 justify-center">
+            <div className="flex items-center justify-center gap-3 py-20 text-slate-400">
                 <span className="spinner" />
                 Loading portfolio...
             </div>
         );
     }
 
+    const totalValue = portfolio.portfolio.reduce((s, i) => s + Number(i.current_value), 0);
+    const totalGain  = portfolio.portfolio.reduce((s, i) => s + Number(i.gain), 0);
+
     return (
         <div className="animate-fade-in">
-            {/* EUR balance banner */}
-            <div className="bg-blue-900 text-white rounded-lg px-5 py-4 mb-5 flex justify-between items-center shadow">
-                <div>
-                    <p className="text-blue-300 text-xs uppercase tracking-widest mb-0.5">Available Balance</p>
-                    <p className="text-2xl font-bold font-mono">€{Number(portfolio.eur_balance).toFixed(2)}</p>
+
+            {/* ── Stats row ── */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="card card-accent p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">EUR Balance</p>
+                    <p className="text-xl font-bold font-mono text-slate-800">
+                        €{Number(portfolio.eur_balance).toFixed(2)}
+                    </p>
                 </div>
-                <img src="/images/bitchest_logo.png" alt="" className="h-10 w-10 opacity-30" />
+                <div className="card card-accent p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Portfolio Value</p>
+                    <p className="text-xl font-bold font-mono text-slate-800">
+                        €{totalValue.toFixed(2)}
+                    </p>
+                </div>
+                <div className="card card-accent p-4">
+                    <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">Total Gain</p>
+                    <p className="text-xl font-bold font-mono" style={{ color: totalGain >= 0 ? '#01FF19' : '#dc2626' }}>
+                        {totalGain >= 0 ? '+' : ''}€{totalGain.toFixed(2)}
+                    </p>
+                </div>
             </div>
 
             {msg && (
-                <div className={`px-4 py-3 rounded-lg mb-4 border flex justify-between items-center animate-slide-down ${
-                    msg.ok ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'
+                <div className={`flex justify-between items-center px-4 py-3 rounded-lg mb-4 text-sm animate-slide-down ${
+                    msg.ok ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'
                 }`}>
-                    <span>{msg.text}</span>
-                    <button className="ml-3 text-lg leading-none opacity-60 hover:opacity-100" onClick={() => setMsg(null)}>×</button>
+                    {msg.text}
+                    <button className="ml-3 opacity-50 hover:opacity-100 text-base" onClick={() => setMsg(null)}>×</button>
                 </div>
             )}
 
+            <h2 className="text-lg font-bold text-slate-800 mb-4">My Holdings</h2>
+
             {portfolio.portfolio.length === 0 ? (
-                <div className="text-center py-12 text-gray-400">
-                    <p className="text-4xl mb-3">📭</p>
-                    <p>No holdings yet. Go to the <strong className="text-blue-700">Market</strong> tab to buy your first crypto.</p>
+                <div className="card p-12 text-center text-slate-400">
+                    <p className="text-3xl mb-3">📭</p>
+                    <p>No holdings yet. Go to <strong className="text-blue-700">Market</strong> to buy your first crypto.</p>
                 </div>
             ) : (
-                portfolio.portfolio.map(item => (
-                    <div key={item.currency} className="border border-gray-200 rounded-lg mb-4 bg-white shadow-sm overflow-hidden">
-                        {/* Coin header */}
-                        <div className={`px-4 py-3 flex justify-between items-center ${
-                            item.gain >= 0 ? 'bg-green-50 border-b border-green-100' : 'bg-red-50 border-b border-red-100'
-                        }`}>
-                            <div className="flex items-center gap-3">
-                                {COIN_IMAGES[item.currency] && (
-                                    <img src={COIN_IMAGES[item.currency]} alt={item.currency} className="w-8 h-8 rounded-full" />
-                                )}
-                                <span className="font-bold text-gray-800">{item.currency}</span>
-                            </div>
-                            <span className={`font-mono font-bold text-lg ${item.gain >= 0 ? 'text-green-700' : 'text-red-600'}`}>
-                                {item.gain >= 0 ? '▲ +' : '▼ '}€{Number(item.gain).toFixed(2)}
-                            </span>
-                        </div>
-
-                        <div className="px-4 py-4">
-                            {/* Summary grid */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                                <div className="bg-gray-50 rounded p-3">
-                                    <p className="text-gray-400 text-xs uppercase mb-1">Quantity</p>
-                                    <p className="font-mono font-semibold">{Number(item.balance).toFixed(6)}</p>
+                portfolio.portfolio.map(item => {
+                    const isGain = Number(item.gain) >= 0;
+                    return (
+                        <div key={item.currency} className="card mb-4 overflow-hidden">
+                            {/* Header */}
+                            <div className="flex justify-between items-center px-5 py-3.5"
+                                style={{
+                                    background: isGain ? '#f0fdf4' : '#fff1f2',
+                                    borderBottom: `1px solid ${isGain ? '#bbf7d0' : '#fecdd3'}`,
+                                }}>
+                                <div className="flex items-center gap-3">
+                                    {COIN_IMAGES[item.currency] && (
+                                        <img src={COIN_IMAGES[item.currency]} alt={item.currency}
+                                            className="w-9 h-9 rounded-full shadow-sm" />
+                                    )}
+                                    <span className="font-bold text-slate-800">{item.currency}</span>
                                 </div>
-                                <div className="bg-gray-50 rounded p-3">
-                                    <p className="text-gray-400 text-xs uppercase mb-1">Avg. Buy</p>
-                                    <p className="font-mono font-semibold">€{Number(item.pmp).toFixed(2)}</p>
-                                </div>
-                                <div className="bg-gray-50 rounded p-3">
-                                    <p className="text-gray-400 text-xs uppercase mb-1">Current Price</p>
-                                    <p className="font-mono font-semibold text-blue-700">€{Number(item.current_price).toFixed(2)}</p>
-                                </div>
-                                <div className="bg-gray-50 rounded p-3">
-                                    <p className="text-gray-400 text-xs uppercase mb-1">Total Value</p>
-                                    <p className="font-mono font-semibold">€{Number(item.current_value).toFixed(2)}</p>
-                                </div>
+                                <span style={{ color: isGain ? '#01FF19' : '#dc2626' }}
+                                    className="font-mono font-bold text-base">
+                                    {isGain ? '▲ +' : '▼ '}€{Number(item.gain).toFixed(2)}
+                                </span>
                             </div>
 
-                            {/* Collapsible purchase history */}
-                            <details className="mb-4 group">
-                                <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700 transition list-none flex items-center gap-1">
-                                    <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
-                                    Purchase history ({item.transactions.length})
-                                </summary>
-                                <table className="w-full mt-2 border border-gray-100 text-xs rounded overflow-hidden">
-                                    <thead className="bg-gray-100 text-gray-600">
-                                        <tr>
-                                            <th className="text-left px-3 py-1.5 border-b">Date</th>
-                                            <th className="text-right px-3 py-1.5 border-b">Quantity</th>
-                                            <th className="text-right px-3 py-1.5 border-b">Price / unit</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {item.transactions.map((tx, i) => (
-                                            <tr key={i} className="border-b hover:bg-gray-50 transition">
-                                                <td className="px-3 py-1.5 text-gray-600">{tx.date}</td>
-                                                <td className="px-3 py-1.5 text-right font-mono">
-                                                    {Number(tx.quantity).toFixed(6)}
-                                                </td>
-                                                <td className="px-3 py-1.5 text-right font-mono">
-                                                    €{Number(tx.price).toFixed(2)}
-                                                </td>
+                            <div className="px-5 py-4">
+                                {/* Stats grid */}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                                    {[
+                                        { label: 'Quantity',      value: Number(item.balance).toFixed(6),       color: '' },
+                                        { label: 'Avg. Buy Price', value: `€${Number(item.pmp).toFixed(2)}`,    color: '' },
+                                        { label: 'Current Price', value: `€${Number(item.current_price).toFixed(2)}`, color: '#35A7FF' },
+                                        { label: 'Total Value',   value: `€${Number(item.current_value).toFixed(2)}`, color: '' },
+                                    ].map(stat => (
+                                        <div key={stat.label}
+                                            style={{ background: '#f8fafc', borderRadius: '0.5rem', padding: '0.75rem' }}>
+                                            <p className="text-xs text-slate-400 uppercase mb-1">{stat.label}</p>
+                                            <p className="font-mono font-semibold text-sm"
+                                                style={{ color: stat.color || '#1e293b' }}>
+                                                {stat.value}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Purchase history */}
+                                <details className="mb-4">
+                                    <summary className="cursor-pointer text-sm text-slate-500 hover:text-slate-700 transition select-none">
+                                        ▶ Purchase history ({item.transactions.length} transactions)
+                                    </summary>
+                                    <table className="w-full mt-2 text-xs"
+                                        style={{ border: '1px solid #e2e8f0', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                                        <thead style={{ background: '#f1f5f9' }}>
+                                            <tr>
+                                                <th className="text-left px-3 py-2 text-slate-500">Date</th>
+                                                <th className="text-right px-3 py-2 text-slate-500">Quantity</th>
+                                                <th className="text-right px-3 py-2 text-slate-500">Price / unit</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </details>
+                                        </thead>
+                                        <tbody>
+                                            {item.transactions.map((tx, i) => (
+                                                <tr key={i} style={{ borderTop: '1px solid #f1f5f9' }}
+                                                    className="hover:bg-slate-50 transition-colors">
+                                                    <td className="px-3 py-1.5 text-slate-600">{tx.date}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono">{Number(tx.quantity).toFixed(6)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono">€{Number(tx.price).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </details>
 
-                            {/* Sell form */}
-                            {sellForm.coin === item.currency ? (
-                                <form onSubmit={handleSell} className="flex flex-wrap items-center gap-3 animate-slide-down">
-                                    <span className="text-sm text-gray-600 font-medium">Sell quantity:</span>
-                                    <input
-                                        type="number"
-                                        min="0.000001"
-                                        step="0.000001"
-                                        max={item.balance}
-                                        value={sellForm.quantity}
-                                        onChange={e => setSellForm(f => ({ ...f, quantity: e.target.value }))}
-                                        className="border border-red-300 rounded px-2 py-1 w-36 text-sm"
-                                        placeholder="0.000000"
-                                        required
-                                        autoFocus
-                                    />
-                                    <button type="submit"
-                                        className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700 transition text-sm font-medium">
-                                        Confirm Sale
+                                {/* Sell form */}
+                                {sellForm.coin === item.currency ? (
+                                    <form onSubmit={handleSell} className="flex flex-wrap items-center gap-3 animate-slide-down">
+                                        <span className="text-sm font-medium text-slate-600">Sell quantity:</span>
+                                        <div className="flex items-center border border-red-300 rounded-lg overflow-hidden bg-white">
+                                            <input
+                                                type="number" min="0.000001" step="0.000001" max={item.balance}
+                                                value={sellForm.quantity}
+                                                onChange={e => setSellForm(f => ({ ...f, quantity: e.target.value }))}
+                                                className="px-3 py-1.5 w-36 text-sm focus:outline-none"
+                                                placeholder="0.000000" required autoFocus
+                                            />
+                                        </div>
+                                        <button type="submit" className="btn-danger text-sm px-4 py-1.5">
+                                            Confirm Sale
+                                        </button>
+                                        <button type="button"
+                                            onClick={() => setSellForm({ coin: null, quantity: '' })}
+                                            className="text-slate-400 hover:text-slate-600 text-sm transition">
+                                            Cancel
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <button
+                                        onClick={() => setSellForm({ coin: item.currency, quantity: '' })}
+                                        style={{ border: '1px solid #fca5a5', color: '#dc2626', background: 'transparent', borderRadius: '0.5rem', padding: '0.375rem 1rem' }}
+                                        className="text-sm font-medium hover:bg-red-50 transition">
+                                        Sell {item.currency}
                                     </button>
-                                    <button type="button"
-                                        className="text-gray-400 hover:text-gray-700 text-sm transition"
-                                        onClick={() => setSellForm({ coin: null, quantity: '' })}>
-                                        Cancel
-                                    </button>
-                                </form>
-                            ) : (
-                                <button
-                                    className="border border-red-300 text-red-600 hover:bg-red-50 transition text-sm px-4 py-1.5 rounded font-medium"
-                                    onClick={() => setSellForm({ coin: item.currency, quantity: '' })}
-                                >
-                                    Sell {item.currency}
-                                </button>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))
+                    );
+                })
             )}
         </div>
     );

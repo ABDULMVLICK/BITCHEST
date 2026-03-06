@@ -3,7 +3,7 @@
 {% block title %}My Profile - BitChest{% endblock %}
 
 {% block body %}
-<nav class="bg-blue-900 text-white px-4 py-3 flex flex-wrap justify-between items-center gap-2 shadow-md">
+<nav style="background:#38618C" class="text-white px-4 py-3 flex flex-wrap justify-between items-center gap-2 shadow-md">
     <div class="flex items-center gap-3">
         <img src="{{ asset('images/bitchest_logo.png') }}" alt="BitChest" class="h-8 w-8 rounded">
         <span class="font-bold text-lg">BitChest</span>
@@ -50,12 +50,12 @@
                 class="w-full border border-gray-300 rounded px-3 py-2">
         </div>
         <button type="submit"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            style="background:#38618C" class="text-white px-4 py-2 rounded hover:opacity-90 transition">
             Save Changes
         </button>
     </form>
 
-    <a href="{{ path('profile_password') }}" class="text-blue-600 hover:underline">
+    <a href="{{ path('profile_password') }}" style="color:#35A7FF" class="hover:underline">
         Change password →
     </a>
 </div>

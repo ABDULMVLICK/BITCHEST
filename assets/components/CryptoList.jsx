@@ -1,7 +1,6 @@
 import { useState, useEffect, Fragment } from 'react';
 import CryptoChart from './CryptoChart';
 
-/** Maps coin names to their logo filenames in /images/ */
 const COIN_IMAGES = {
     'Bitcoin':      '/images/bitcoin.png',
     'Ethereum':     '/images/ethereum.png',
@@ -17,12 +16,7 @@ const COIN_IMAGES = {
 
 /**
  * Displays current prices for all 10 supported cryptocurrencies.
- *
- * Features:
- * - Expandable 30-day price chart per coin
- * - Inline buy form (amount in EUR)
- *
- * @param {Function} onBalanceChange - Called with new EUR balance after a purchase
+ * Features: expandable chart, inline buy form.
  */
 const CryptoList = ({ onBalanceChange }) => {
     const [prices,       setPrices]       = useState({});
@@ -43,7 +37,6 @@ const CryptoList = ({ onBalanceChange }) => {
         }).catch(() => setLoading(false));
     }, []);
 
-    /** Submits a buy order for the selected coin. */
     const handleBuy = async (e) => {
         e.preventDefault();
         const res  = await fetch('/api/buy', {
@@ -52,9 +45,8 @@ const CryptoList = ({ onBalanceChange }) => {
             body: JSON.stringify({ coin: buyForm.coin, amount: parseFloat(buyForm.amount) }),
         });
         const data = await res.json();
-
         if (res.ok) {
-            setMsg({ ok: true, text: `Bought ${buyForm.coin}. Balance: €${Number(data.eur_balance).toFixed(2)}` });
+            setMsg({ ok: true, text: `Bought ${buyForm.coin}. New balance: €${Number(data.eur_balance).toFixed(2)}` });
             onBalanceChange?.(data.eur_balance);
             setBuyForm({ coin: null, amount: '' });
         } else {
@@ -64,7 +56,7 @@ const CryptoList = ({ onBalanceChange }) => {
 
     if (loading) {
         return (
-            <div className="flex items-center gap-3 text-gray-500 py-10 justify-center">
+            <div className="flex items-center justify-center gap-3 py-20 text-slate-400">
                 <span className="spinner" />
                 Loading market data...
             </div>
@@ -73,104 +65,121 @@ const CryptoList = ({ onBalanceChange }) => {
 
     return (
         <div>
+            <h2 className="text-lg font-bold text-slate-800 mb-4">Crypto Market</h2>
+
             {msg && (
-                <div className={`px-4 py-3 rounded-lg mb-4 border flex justify-between items-center animate-slide-down ${
-                    msg.ok ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'
+                <div className={`flex justify-between items-center px-4 py-3 rounded-lg mb-4 text-sm animate-slide-down ${
+                    msg.ok
+                        ? 'bg-green-50 border border-green-200 text-green-800'
+                        : 'bg-red-50 border border-red-200 text-red-800'
                 }`}>
-                    <span>{msg.text}</span>
-                    <button className="ml-3 text-lg leading-none opacity-60 hover:opacity-100" onClick={() => setMsg(null)}>×</button>
+                    {msg.text}
+                    <button className="ml-3 opacity-50 hover:opacity-100 text-base" onClick={() => setMsg(null)}>×</button>
                 </div>
             )}
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                <table className="w-full bg-white">
+            <div className="card overflow-hidden">
+                <table className="w-full">
                     <thead>
-                        <tr className="bg-blue-900 text-white text-sm">
-                            <th className="text-left px-4 py-3">#</th>
-                            <th className="text-left px-4 py-3">Cryptocurrency</th>
-                            <th className="text-right px-4 py-3">Price (EUR)</th>
-                            <th className="text-center px-4 py-3">Chart</th>
-                            <th className="text-center px-4 py-3">Action</th>
+                        <tr style={{ background: '#38618C', color: '#fff' }} className="text-xs uppercase tracking-wider">
+                            <th className="text-left px-5 py-3 w-8">#</th>
+                            <th className="text-left px-5 py-3">Asset</th>
+                            <th className="text-right px-5 py-3">Price (EUR)</th>
+                            <th className="text-center px-5 py-3">Chart</th>
+                            <th className="text-center px-5 py-3">Trade</th>
                         </tr>
                     </thead>
                     <tbody>
                         {Object.entries(prices).map(([coin, price], index) => (
                             <Fragment key={coin}>
-                                <tr className="border-b border-gray-100 hover:bg-blue-50 transition">
-                                    <td className="px-4 py-3 text-gray-400 text-sm">{index + 1}</td>
-                                    <td className="px-4 py-3">
+                                {/* ── Coin row ── */}
+                                <tr
+                                    style={{ borderBottom: '1px solid #f1f5f9' }}
+                                    className="hover:bg-slate-50 transition-colors"
+                                >
+                                    <td className="px-5 py-3.5 text-slate-400 text-xs">{index + 1}</td>
+
+                                    <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-3">
                                             {COIN_IMAGES[coin] && (
-                                                <img src={COIN_IMAGES[coin]} alt={coin} className="w-7 h-7 rounded-full" />
+                                                <img src={COIN_IMAGES[coin]} alt={coin}
+                                                    className="w-8 h-8 rounded-full shadow-sm" />
                                             )}
-                                            <span className="font-medium">{coin}</span>
+                                            <span className="font-semibold text-slate-800 text-sm">{coin}</span>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-right font-mono font-semibold text-blue-900">
-                                        €{Number(price).toFixed(2)}
+
+                                    <td className="px-5 py-3.5 text-right">
+                                        <span className="font-mono font-bold text-slate-800">
+                                            €{Number(price).toFixed(2)}
+                                        </span>
                                     </td>
-                                    <td className="px-4 py-3 text-center">
+
+                                    <td className="px-5 py-3.5 text-center">
                                         <button
-                                            className="text-xs border border-blue-300 text-blue-700 px-2 py-1 rounded hover:bg-blue-100 transition"
                                             onClick={() => setSelectedCoin(selectedCoin === coin ? null : coin)}
+                                            style={selectedCoin === coin
+                                                ? { background: '#35A7FF', color: '#fff', border: 'none' }
+                                                : { background: 'transparent', color: '#35A7FF', border: '1px solid #35A7FF' }
+                                            }
+                                            className="text-xs px-3 py-1 rounded-full transition"
                                         >
-                                            {selectedCoin === coin ? 'Hide' : 'Chart'}
+                                            {selectedCoin === coin ? 'Hide ▲' : 'Chart ▼'}
                                         </button>
                                     </td>
-                                    <td className="px-4 py-3 text-center">
+
+                                    <td className="px-5 py-3.5 text-center">
                                         <button
-                                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition"
-                                            onClick={() => setBuyForm({ coin, amount: '' })}
+                                            onClick={() => setBuyForm(f => f.coin === coin ? { coin: null, amount: '' } : { coin, amount: '' })}
+                                            className="btn-buy"
                                         >
                                             Buy
                                         </button>
                                     </td>
                                 </tr>
 
-                                {/* Expandable chart row */}
+                                {/* ── Chart row ── */}
                                 {selectedCoin === coin && history[coin] && (
                                     <tr>
-                                        <td colSpan={5} className="px-4 py-4 bg-gray-50 border-b border-gray-100">
-                                            <p className="font-medium mb-3 text-gray-700">{coin} — 30-day price (EUR)</p>
-                                            <div className="animate-slide-down">
-                                                <CryptoChart coin={coin} history={history[coin]} />
-                                            </div>
+                                        <td colSpan={5} className="px-5 py-4 animate-slide-down"
+                                            style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-3">
+                                                {coin} — 30-day price history
+                                            </p>
+                                            <CryptoChart coin={coin} history={history[coin]} />
                                         </td>
                                     </tr>
                                 )}
 
-                                {/* Inline buy form row */}
+                                {/* ── Buy form row ── */}
                                 {buyForm.coin === coin && (
                                     <tr>
-                                        <td colSpan={5} className="px-4 py-3 bg-blue-50 border-b border-blue-100">
-                                            <form onSubmit={handleBuy} className="flex flex-wrap items-center gap-3 animate-slide-down">
+                                        <td colSpan={5} className="px-5 py-3 animate-slide-down"
+                                            style={{ background: 'rgba(53,167,255,0.07)', borderBottom: '1px solid rgba(53,167,255,0.2)' }}>
+                                            <form onSubmit={handleBuy} className="flex flex-wrap items-center gap-3">
                                                 <div className="flex items-center gap-2">
                                                     {COIN_IMAGES[coin] && (
                                                         <img src={COIN_IMAGES[coin]} alt={coin} className="w-5 h-5" />
                                                     )}
-                                                    <span className="font-medium text-blue-900">Buy {coin}</span>
+                                                    <span className="font-semibold text-blue-900 text-sm">Buy {coin}</span>
                                                 </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-gray-500">€</span>
+                                                <div className="flex items-center border border-blue-300 rounded-lg overflow-hidden bg-white">
+                                                    <span className="px-2 text-slate-400 text-sm">€</span>
                                                     <input
-                                                        type="number"
-                                                        min="0.01"
-                                                        step="0.01"
+                                                        type="number" min="0.01" step="0.01"
                                                         value={buyForm.amount}
                                                         onChange={e => setBuyForm(f => ({ ...f, amount: e.target.value }))}
-                                                        className="border border-blue-300 rounded px-2 py-1 w-28 text-sm"
+                                                        className="px-2 py-1.5 w-28 text-sm focus:outline-none"
                                                         placeholder="Amount"
-                                                        required
-                                                        autoFocus
+                                                        required autoFocus
                                                     />
                                                 </div>
-                                                <button type="submit"
-                                                    className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition text-sm font-medium">
+                                                <button type="submit" className="btn-primary text-sm px-4 py-1.5">
                                                     Confirm
                                                 </button>
                                                 <button type="button"
-                                                    className="text-gray-500 hover:text-gray-800 text-sm transition"
-                                                    onClick={() => setBuyForm({ coin: null, amount: '' })}>
+                                                    onClick={() => setBuyForm({ coin: null, amount: '' })}
+                                                    className="text-slate-400 hover:text-slate-600 text-sm transition">
                                                     Cancel
                                                 </button>
                                             </form>

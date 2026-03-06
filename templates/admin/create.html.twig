@@ -3,7 +3,7 @@
 {% block title %}New User - Admin{% endblock %}
 
 {% block body %}
-<nav class="bg-blue-900 text-white px-4 py-3 flex justify-between items-center shadow-md">
+<nav style="background:#38618C" class="text-white px-4 py-3 flex justify-between items-center shadow-md">
     <div class="flex items-center gap-3">
         <img src="{{ asset('images/bitchest_logo.png') }}" alt="BitChest" class="h-8 w-8 rounded">
         <span class="font-bold text-lg">BitChest <span class="text-blue-300 text-sm font-normal">Admin</span></span>
@@ -46,7 +46,7 @@
         </div>
         <div class="flex gap-3">
             <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                style="background:#38618C" class="text-white px-4 py-2 rounded hover:opacity-90 transition">
                 Create
             </button>
             <a href="{{ path('admin_index') }}"
