@@ -31,8 +31,9 @@ RUN apt-get update && apt-get install -y \
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Apache : pointer vers public/ et activer mod_rewrite + AllowOverride
-RUN a2enmod rewrite && \
+# Apache : désactiver MPM event, activer prefork + rewrite, pointer vers public/
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true && \
+    a2enmod mpm_prefork rewrite && \
     sed -ri 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf && \
     sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
