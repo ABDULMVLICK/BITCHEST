@@ -11,7 +11,7 @@ COPY assets/ assets/
 RUN npm run build
 
 # ── Stage 2 : image PHP + Apache pour Symfony ─────────────────────────────────
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 # Extensions PHP nécessaires pour Symfony + Doctrine + MySQL
 RUN apt-get update && apt-get install -y \
