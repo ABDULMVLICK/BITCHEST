@@ -2,7 +2,7 @@
 set -e
 
 echo "==> Vider le cache Symfony (prod)"
-php bin/console cache:clear --env=prod --no-interaction
+php bin/console cache:clear --env=prod --no-warmup --no-interaction
 
 echo "==> Migrations base de données"
 php bin/console doctrine:migrations:migrate --no-interaction --env=prod
