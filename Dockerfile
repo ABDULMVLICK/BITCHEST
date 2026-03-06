@@ -31,15 +31,10 @@ RUN apt-get update && apt-get install -y \
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Apache : pointer vers public/ et activer mod_rewrite
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-        /etc/apache2/sites-available/*.conf && \
-    sed -ri 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' \
-        /etc/apache2/apache2.conf \
-        /etc/apache2/conf-available/*.conf && \
-    a2enmod rewrite
+# Apache : pointer vers public/ et activer mod_rewrite + AllowOverride
+RUN a2enmod rewrite && \
+    sed -ri 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf && \
+    sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 
@@ -52,7 +47,7 @@ COPY --from=node-builder /app/public/build public/build/
 # Dépendances PHP (prod uniquement)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
-# Script de démarrage (migrations + cache + Apache)
+# Script de démarrage
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
